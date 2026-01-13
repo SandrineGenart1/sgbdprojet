@@ -15,7 +15,7 @@ Aucune requête SQL n'est écrite ici.
 Aucune logique métier n'est écrite ici.
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
 " on ajoute foreignkey car on l'utilise dans model"
 from dal.database import Base
 
@@ -117,6 +117,35 @@ class Modele(Base):
     # Clés étrangères
     cat_id = Column(Integer, ForeignKey("categorie.cat_id"), nullable=False)
     mar_id = Column(Integer, ForeignKey("marque.mar_id"), nullable=False)
+
+
+class Materiel(Base):
+    """
+    Modèle ORM correspondant à la table MATERIEL.
+
+    Un matériel est un équipement physique louable.
+    Il est identifié par un numéro de série unique et possède un statut.
+
+    Table : MATERIEL
+    Clé primaire : mat_id
+    Contrainte : mat_serial est unique
+    Clé étrangère :
+      - mod_id → MODELE
+    """
+
+    __tablename__ = "materiel"
+
+    mat_id = Column(Integer, primary_key=True)
+
+    mat_serial = Column(String(50), nullable=False, unique=True)
+    mat_dateachat = Column(Date, nullable=False)
+
+    # Le CHECK des valeurs possibles (Disponible, Loué, En maintenance, Rebut)
+    # est déjà défini dans la base de données.
+    mat_statut = Column(String(20), nullable=False)
+
+    # Clé étrangère vers MODELE
+    mod_id = Column(Integer, ForeignKey("modele.mod_id"), nullable=False)
 
 
 
