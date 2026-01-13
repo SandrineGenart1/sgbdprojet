@@ -148,4 +148,30 @@ class Materiel(Base):
     mod_id = Column(Integer, ForeignKey("modele.mod_id"), nullable=False)
 
 
+class LigneContrat(Base):
+    """
+    Modèle ORM correspondant à la table LIGNECONTRAT.
+
+    Une ligne de contrat représente un matériel loué dans un contrat,
+    avec une date de retour prévue et une date de retour réelle (optionnelle).
+
+    Table : LIGNECONTRAT
+    Clé primaire : lc_id
+    Clés étrangères :
+      - cont_id → CONTRAT
+      - mat_id  → MATERIEL
+    Contrainte : (cont_id, mat_id) unique (déjà défini dans la base)
+    """
+
+    __tablename__ = "lignecontrat"
+
+    lc_id = Column(Integer, primary_key=True)
+
+    lc_dateretourprevue = Column(Date, nullable=False)
+    lc_dateretourreelle = Column(Date, nullable=True)
+
+    cont_id = Column(Integer, ForeignKey("contrat.cont_id"), nullable=False)
+    mat_id = Column(Integer, ForeignKey("materiel.mat_id"), nullable=False)
+
+
 
