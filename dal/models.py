@@ -16,11 +16,39 @@ Aucune logique métier n'est écrite ici.
 """
 
 from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
-" on ajoute foreignkey et date car on les utilise dans d'autres classes model"
+# On ajoute ForeignKey et Date car on les utilise dans d'autres classes du modèle
+
 from dal.database import Base
 from sqlalchemy.orm import relationship
 
  
+class Contrat(Base):
+    """
+    Modèle ORM correspondant à la table CONTRAT.
+
+    Un contrat représente une location effectuée par un client
+    pour une période donnée.
+
+    Table : CONTRAT
+    Clé primaire : cont_id
+    Clé étrangère :
+      - cli_id → CLIENT
+    """
+
+    __tablename__ = "contrat"
+
+    cont_id = Column(Integer, primary_key=True)
+
+    cont_dateDebut = Column("cont_datedebut", Date, nullable=False)
+    cont_dateFin = Column("cont_datefin", Date, nullable=False)
+
+
+    cli_id = Column(Integer, ForeignKey("client.cli_id"), nullable=False)
+    
+    # Relation vers le client ayant signé le contrat
+    client = relationship("Client", back_populates="contrats")
+    # Un contrat contient plusieurs lignes de contrat
+    lignes = relationship("LigneContrat", back_populates="contrat")
 
 
 
@@ -70,6 +98,10 @@ class Client(Base):
 
     cli_vip = Column(Boolean, nullable=True)
 
+    # Un client peut avoir plusieurs contrats
+    contrats = relationship("Contrat", back_populates="client")
+
+
 
 class Categorie(Base):
     """
@@ -81,7 +113,7 @@ class Categorie(Base):
     cat_id = Column(Integer, primary_key=True)
     cat_libelle = Column(String(50), nullable=False, unique=True)
 
-        # Une catégorie contient plusieurs modèles
+    # Une catégorie contient plusieurs modèles
     modeles = relationship("Modele", back_populates="categorie")
 
 
@@ -101,7 +133,7 @@ class Marque(Base):
     mar_id = Column(Integer, primary_key=True)
     mar_libelle = Column(String(50), nullable=False, unique=True)
 
-        # Une marque possède plusieurs modèles
+    # Une marque possède plusieurs modèles
     modeles = relationship("Modele", back_populates="marque")
 
 
@@ -130,7 +162,7 @@ class Modele(Base):
     cat_id = Column(Integer, ForeignKey("categorie.cat_id"), nullable=False)
     mar_id = Column(Integer, ForeignKey("marque.mar_id"), nullable=False)
 
-        # Relations ORM (navigation entre objets)
+    # Relations ORM (navigation entre objets)
     categorie = relationship("Categorie", back_populates="modeles")
     marque = relationship("Marque", back_populates="modeles")
 
@@ -167,8 +199,12 @@ class Materiel(Base):
     # Clé étrangère vers MODELE
     mod_id = Column(Integer, ForeignKey("modele.mod_id"), nullable=False)
 
-        # Relation vers le modèle (navigation Materiel -> Modele)
+    # Relation vers le modèle (navigation Materiel -> Modele)
     modele = relationship("Modele", back_populates="materiels")
+
+    # Un matériel peut apparaître dans plusieurs lignes de contrat
+    lignes = relationship("LigneContrat", back_populates="materiel")
+
 
 
 
@@ -196,6 +232,14 @@ class LigneContrat(Base):
 
     cont_id = Column(Integer, ForeignKey("contrat.cont_id"), nullable=False)
     mat_id = Column(Integer, ForeignKey("materiel.mat_id"), nullable=False)
+
+    # Relation vers le contrat associé
+    contrat = relationship("Contrat", back_populates="lignes")
+
+    # Relation vers le matériel loué
+    materiel = relationship("Materiel", back_populates="lignes")
+
+
 
 
 
