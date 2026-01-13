@@ -7,10 +7,11 @@ load_dotenv()
 
 def get_connection():
     """
-    Établit une connexion à la base de données PostgreSQL
+    On crée une fonction qui établit une connexion à la base de données PostgreSQL
     en utilisant un utilisateur applicatif dédié.
     Les paramètres de connexion sont lus depuis le fichier .env
-    afin d’éviter toute information sensible dans le code.
+    afin d’éviter toute information sensible dans le code.C'est obligatoire pour la
+    sécurité d'une application.
     """
 
     # Paramètres de connexion regroupés dans un dictionnaire
