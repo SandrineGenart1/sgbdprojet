@@ -22,6 +22,9 @@ from sqlalchemy.orm import Session
 
 from dal.models import Client, Categorie, Marque, Modele, Materiel, Contrat, LigneContrat
 
+from sqlalchemy.exc import IntegrityError
+
+
 
 class LocaMatRepository:
     """
@@ -114,6 +117,31 @@ class LocaMatRepository:
             .order_by(Materiel.mat_id)
         )
         return self.session.execute(stmt).scalars().all()
+    def add_client(self, client: Client) -> Client:
+        """
+        Ajoute un client en base de données.
+
+        Rôle DAL :
+        - ajouter l'objet à la session
+        - faire commit
+        - en cas d'erreur d'intégrité (email unique, etc.), rollback et relancer
+
+        Args:
+            client (Client): objet Client ORM à insérer
+
+        Returns:
+            Client: le client inséré (avec cli_id rempli après commit)
+        """
+        try:
+            self.session.add(client)
+            self.session.commit()
+            # Optionnel : rafraîchir l'objet pour récupérer les valeurs générées (cli_id)
+            self.session.refresh(client)
+            return client
+        except IntegrityError:
+            self.session.rollback()
+            raise
+    
 
 
 
