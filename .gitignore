@@ -1,9 +1,20 @@
-# Environnement virtuel Python
-venv/
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
 
-# Fichiers sensibles
+# Environnements virtuels
+venv/
+env/
+
+# Fichiers sensibles (mots de passe / variables d'environnement)
 .env
 
-# Fichiers Python inutiles
-__pycache__/
-*.pyc
+# Bases de données locales et IDE
+*.sqlite3
+*.db
+.vscode/
+.idea/
+
+# Rapports / cache de tests
+.pytest_cache/

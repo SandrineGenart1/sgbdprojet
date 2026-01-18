@@ -144,4 +144,37 @@ class LocaMatRepository:
     
 
 
+    def louer_materiel(self, mat_id: int) -> bool:
+        """
+        Tente de louer un matériel (logique simple testable avec mocking).
+
+        But :
+        - illustrer un test unitaire "pur" (sans DB) grâce au mock d'une session.
+
+        Règles :
+        - Si le matériel n'existe pas -> False
+        - Si son statut n'est pas 'Disponible' -> False
+        - Sinon : on passe le statut à 'Loué', on commit, et on renvoie True
+
+        Args:
+            mat_id (int): identifiant du matériel à louer
+
+        Returns:
+            bool: True si la location est effectuée, False sinon
+        """
+        # session.get(Model, id) = accès direct par clé primaire (facile à mocker)
+        materiel = self.session.get(Materiel, mat_id)
+
+        # 1) Le matériel n'existe pas
+        if materiel is None:
+            return False
+
+        # 2) Le matériel existe mais n'est pas louable
+        if materiel.mat_statut != "Disponible":
+            return False
+
+        # 3) Cas nominal : on loue
+        materiel.mat_statut = "Loué"
+        self.session.commit()
+        return True
 
