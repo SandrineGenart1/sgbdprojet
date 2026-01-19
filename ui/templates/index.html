@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Matériels disponibles</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Numéro de série</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in materiels %}
+        <tr>
+          <td>{{ m.mat_id }}</td>
+          <td>{{ m.mat_serial }}</td>
+          <td>{{ m.mat_statut }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
