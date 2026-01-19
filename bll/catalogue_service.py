@@ -7,70 +7,70 @@ Couche BLL (Business Logic Layer).
 Rôle :
 - Orchestrer les cas d'usage (use cases) de l'application.
 - Utiliser le Repository (DAL) pour accéder aux données.
-- Ajouter des règles métier plus tard (validations, exceptions métier, etc.).
+- Appliquer les règles métier (plus tard : validations, exceptions métier, etc.).
 
-Important :
-- La BLL ne fait pas de requêtes SQL/ORM directement.
-- Elle délègue au repository.
-- Idéalement, la BLL ne crée pas la session : elle reçoit ses dépendances.
-  (=> injection de dépendance, plus simple à tester)
+Important (Option 1 : Injection de dépendance) :
+- La BLL NE crée PAS de Session SQLAlchemy.
+- La session est gérée à l’extérieur (UI / app Flask / scripts).
+- On injecte donc un repository déjà prêt (qui lui-même contient la session).
+
+Pourquoi c'est bien ?
+- Tests plus faciles (on peut injecter un faux repo / repo de test).
+- Architecture propre : UI -> BLL -> DAL -> DB
 """
 
 from __future__ import annotations
 
+from typing import List
+
+from dal.models import Categorie, Marque, Modele, Materiel
 from dal.repository import LocaMatRepository
 
 
 class CatalogueService:
     """
-    Service BLL pour tout ce qui concerne le catalogue
-    (catégories, marques, modèles, matériels).
-
-    Dans cette version "propre", le service reçoit un repository déjà prêt.
-    Cela permet :
-    - de ne pas dupliquer SessionLocal() partout
-    - de tester la BLL facilement (en injectant un faux repository / mock)
-    - de garder une architecture claire : UI -> BLL -> DAL
+    Service BLL pour tout ce qui concerne le catalogue :
+    catégories, marques, modèles, matériels.
     """
 
     def __init__(self, repository: LocaMatRepository):
         """
         Injection de dépendance :
-        on reçoit le repository (DAL) depuis l'extérieur.
+        on reçoit un repository (DAL) déjà construit.
 
-        Args:
-            repository (LocaMatRepository): repository configuré avec une session active
+        Le repository contient déjà une session SQLAlchemy.
+        La BLL n'a pas à savoir comment la session est créée.
         """
-        self.repository = repository
+        self.repo = repository
 
-    def lister_categories(self):
+    def lister_categories(self) -> List[Categorie]:
         """
-        Cas d'usage : lister les catégories.
+        Retourne la liste des catégories.
+        (Le tri est fait côté DAL.)
+        """
+        return self.repo.get_all_categories()
 
-        Ici, la BLL ne fait aucune requête :
-        elle délègue au DAL, qui sait comment interroger la base.
+    def lister_marques(self) -> List[Marque]:
         """
-        return self.repository.get_all_categories()
+        Retourne la liste des marques.
+        (Le tri est fait côté DAL.)
+        """
+        return self.repo.get_all_marques()
 
-    def lister_marques(self):
+    def lister_modeles(self) -> List[Modele]:
         """
-        Cas d'usage : lister les marques.
+        Retourne la liste des modèles.
         """
-        return self.repository.get_all_marques()
+        return self.repo.get_all_modeles()
 
-    def lister_modeles(self):
+    def lister_materiels_disponibles(self) -> List[Materiel]:
         """
-        Cas d'usage : lister les modèles.
-        """
-        return self.repository.get_all_modeles()
-
-    def lister_materiels_disponibles(self):
-        """
-        Cas d'usage : lister les matériels disponibles.
+        Retourne uniquement les matériels disponibles.
 
         Remarque :
-        - Aujourd'hui la règle "Disponible" est appliquée côté DAL.
-        - Plus tard, si la règle évolue (ex : exclure aussi 'Réservé'),
-          c'est typiquement la BLL qui portera la règle métier.
+        - Actuellement la règle 'Disponible' est appliquée dans le DAL
+          via get_materiels_disponibles().
+        - Si demain la règle change (ex: exclure 'Réservé'), on mettra
+          la logique ici (BLL), et le DAL restera "bête" (requêtes).
         """
-        return self.repository.get_materiels_disponibles()
+        return self.repo.get_materiels_disponibles()

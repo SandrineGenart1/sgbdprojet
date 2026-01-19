@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Titre dynamique selon la page -->
+    <title>{% block title %}LOCA-MAT{% endblock %}</title>
+</head>
+<body>
+
+    <!-- En-tête commun -->
+    <header>
+        <h1>LOCA-MAT</h1>
+
+        <!-- Menu de navigation -->
+        <nav>
+            <a href="/">Accueil</a> |
+            <a href="/materiels/disponibles">Matériels disponibles</a> |
+            <a href="/categories">Catégories</a> |
+            <a href="/marques">Marques</a>
+        </nav>
+
+        <hr>
+    </header>
+
+    <!-- Contenu spécifique à chaque page -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

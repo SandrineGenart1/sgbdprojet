@@ -1,0 +1,94 @@
+<!--
+materiels.html
+==============
+
+Template Jinja2 pour afficher
+les matériels DISPONIBLES.
+
+Chaque matériel est un objet ORM Materiel,
+avec des relations vers Modele, Marque, Categorie.
+-->
+
+{% extends "base.html" %}
+<!--
+On réutilise la structure commune du site
+-->
+
+
+
+{% block title %}
+Matériels disponibles
+{% endblock %}
+<!--
+Titre affiché dans l’onglet du navigateur
+-->
+
+
+
+{% block content %}
+<!--
+Début du contenu principal
+-->
+
+<h1>Matériels disponibles</h1>
+
+<!--
+La variable "materiels" est envoyée par Flask :
+
+render_template(
+    "materiels.html",
+    materiels=materiels
+)
+
+materiels = liste d'objets Materiel
+-->
+
+<table border="1" cellpadding="6">
+    <!--
+    Tableau HTML simple (sans CSS pour l’instant)
+    -->
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Numéro de série</th>
+            <th>Statut</th>
+            <th>Modèle</th>
+            <th>Marque</th>
+            <th>Catégorie</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for materiel in materiels %}
+        <!--
+        Pour chaque matériel disponible
+        -->
+
+        <tr>
+            <td>{{ materiel.mat_id }}</td>
+            <td>{{ materiel.mat_serial }}</td>
+            <td>{{ materiel.mat_statut }}</td>
+
+            <!--
+            Ici on utilise les RELATIONS ORM :
+
+            materiel.modele
+            materiel.modele.marque
+            materiel.modele.categorie
+            -->
+
+            <td>{{ materiel.modele.mod_libelle }}</td>
+            <td>{{ materiel.modele.marque.mar_libelle }}</td>
+            <td>{{ materiel.modele.categorie.cat_libelle }}</td>
+        </tr>
+
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>
+    <a href="/">⬅ Retour à l’accueil</a>
+</p>
+
+{% endblock %}

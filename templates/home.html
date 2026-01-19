@@ -1,0 +1,31 @@
+<!--
+Ce fichier est un TEMPLATE HTML.
+Il est interprété par Jinja2.
+-->
+
+{% extends "base.html" %}
+<!--
+extends = "ce fichier hérite de base.html"
+On récupère automatiquement :
+- le <head>
+- le menu
+- la structure générale
+-->
+
+{% block title %}
+Accueil
+{% endblock %}
+<!--
+Ce bloc remplace le titre défini dans base.html
+-->
+
+{% block content %}
+<!--
+Ce bloc remplace le contenu principal de la page
+-->
+
+<p>
+    Bienvenue dans l’application de gestion de location de matériel.
+</p>
+
+{% endblock %}
