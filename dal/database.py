@@ -1,7 +1,4 @@
 """
-Module database.py
-==================
-
 Ce module est responsable de la configuration de l'accès à la base de données
 via SQLAlchemy.
 
@@ -17,6 +14,10 @@ IMPORTANT (industrialisation / CI) :
 - Les tests pytest importent Base depuis ce module
 - Donc ce module ne doit PAS lever d'erreur à l'import
 - En CI, on bascule automatiquement vers SQLite en mémoire
+
+IMPORTANT (Render / prod) :
+- Sur Render, on fournit généralement une seule variable : DATABASE_URL
+- Neon impose SSL => on met ?sslmode=require dans l'URL (côté variable)
 """
 
 import os
@@ -31,8 +32,8 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 # ---------------------------------------------------------------------------
 # En local :
 #   - le fichier .env existe et contient les infos PostgreSQL
-# En CI (GitHub Actions) :
-#   - le fichier .env n'existe pas (il est ignoré par .gitignore)
+# En CI / Render :
+#   - le fichier .env peut ne pas exister
 #   - load_dotenv() ne plante pas, il ne charge simplement rien
 load_dotenv()
 
@@ -40,8 +41,6 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 # Classe de base pour les modèles ORM
 # ---------------------------------------------------------------------------
-# Toutes les classes ORM (Client, Materiel, Contrat, etc.)
-# hériteront de cette classe Base.
 class Base(DeclarativeBase):
     """
     Classe de base SQLAlchemy pour tous les modèles ORM.
@@ -58,21 +57,33 @@ def build_database_url() -> str:
     """
     Construit l'URL de connexion SQLAlchemy.
 
-    Fonctionnement :
-    - En local : utilise PostgreSQL via les variables du fichier .env
-    - En tests / CI : bascule automatiquement vers SQLite en mémoire
-
-    Variables attendues dans le fichier .env (local uniquement) :
-    - DB_HOST
-    - DB_NAME
-    - DB_USER
-    - DB_PASSWORD
-    - DB_PORT (optionnel, 5432 par défaut)
+    Priorité (du plus courant en prod au plus courant en local) :
+    1) DATABASE_URL (Render / prod)
+    2) DB_HOST + DB_NAME + DB_USER + DB_PASSWORD (+ DB_PORT) (local)
+    3) SQLite mémoire si contexte de tests/CI
 
     Returns:
         str : URL de connexion compatible avec SQLAlchemy
     """
 
+    # -----------------------------------------------------------------------
+    # CAS 0 — DATABASE_URL fourni (Render / prod)
+    # -----------------------------------------------------------------------
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        # IMPORTANT :
+        # - Pour Neon, l'URL doit contenir sslmode=require
+        # - Exemple : postgresql://user:pwd@host/db?sslmode=require
+        #
+        # Render fournit parfois "postgres://..." (ancien schéma) :
+        # SQLAlchemy préfère "postgresql://..."
+        if database_url.startswith("postgres://"):
+            database_url = "postgresql://" + database_url[len("postgres://"):]
+        return database_url
+
+    # -----------------------------------------------------------------------
+    # CAS 1 — Variables PostgreSQL "détaillées" (local)
+    # -----------------------------------------------------------------------
     host = os.getenv("DB_HOST")
     name = os.getenv("DB_NAME")
     user = os.getenv("DB_USER")
@@ -80,15 +91,8 @@ def build_database_url() -> str:
     port = os.getenv("DB_PORT", "5432")
 
     # -----------------------------------------------------------------------
-    # CAS 1 — Variables PostgreSQL absentes
+    # CAS 2 — Variables PostgreSQL absentes (tests / CI)
     # -----------------------------------------------------------------------
-    # Cela arrive dans deux situations normales :
-    # - tests pytest
-    # - GitHub Actions (CI)
-    #
-    # Dans ce cas :
-    # - on NE veut PAS lever d'erreur
-    # - on utilise SQLite en mémoire pour permettre aux tests de s'exécuter
     if not all([host, name, user, password]):
         if (
             os.getenv("PYTEST_CURRENT_TEST")   # pytest
@@ -98,16 +102,15 @@ def build_database_url() -> str:
             return "sqlite+pysqlite:///:memory:"
 
         # -------------------------------------------------------------------
-        # CAS 2 — Exécution locale sans .env
+        # CAS 3 — Exécution locale sans config
         # -------------------------------------------------------------------
-        # Ici, c'est une vraie erreur de configuration
         raise ValueError(
             "Variables d'environnement manquantes. "
-            "Vérifie DB_HOST, DB_NAME, DB_USER et DB_PASSWORD dans le fichier .env."
+            "Fournis DATABASE_URL (prod) ou DB_HOST/DB_NAME/DB_USER/DB_PASSWORD (local)."
         )
 
     # -----------------------------------------------------------------------
-    # CAS 3 — Exécution locale normale avec PostgreSQL
+    # CAS 4 — Exécution locale normale avec PostgreSQL
     # -----------------------------------------------------------------------
     return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{name}"
 
@@ -115,23 +118,18 @@ def build_database_url() -> str:
 # ---------------------------------------------------------------------------
 # Création du moteur SQLAlchemy
 # ---------------------------------------------------------------------------
-# L'engine représente la connexion centrale à la base de données.
-# SQLAlchemy l'utilise pour exécuter toutes les requêtes.
 DATABASE_URL = build_database_url()
 
 engine = create_engine(
     DATABASE_URL,
-    echo=False  # Mettre True pour afficher les requêtes SQL (debug)
+    echo=False,         # True si tu veux voir les requêtes SQL en debug
+    pool_pre_ping=True  # évite des erreurs de connexions "stales" sur cloud
 )
 
 
 # ---------------------------------------------------------------------------
 # Fabrique de sessions
 # ---------------------------------------------------------------------------
-# Une session représente une "conversation" avec la base de données.
-# Elle est utilisée par :
-# - la DAL (repository)
-# - la BLL
 SessionLocal = sessionmaker(
     bind=engine,
     autoflush=False,
