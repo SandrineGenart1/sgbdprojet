@@ -3,8 +3,9 @@ blinker==1.9.0
 click==8.3.1
 colorama==0.4.6
 Flask==3.1.2
-flask-login==0.6.3
+Flask-Login==0.6.3
 greenlet==3.3.0
+gunicorn==24.0.0
 iniconfig==2.3.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
@@ -23,7 +24,3 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
 Werkzeug==3.1.5
-
-
-
-
