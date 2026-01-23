@@ -1,29 +1,51 @@
+# Nom du workflow (affiché dans l’onglet GitHub Actions)
 name: Tests Python (pytest)
 
+# Déclencheurs du workflow
+# Ici, les tests sont lancés :
+# - à chaque push sur la branche master
+# - à chaque pull request vers la branche master
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
+# Définition des jobs (tâches automatisées)
 jobs:
+
+  # Nom du job (ici : test)
   test:
+
+    # Type de machine virtuelle utilisée par GitHub
+    # ubuntu-latest = VM Linux propre et standard
     runs-on: ubuntu-latest
 
+    # Liste des étapes exécutées dans l’ordre
     steps:
+
+    # Étape 1 : récupération du code source depuis le dépôt GitHub
     - name: Récupération du code
       uses: actions/checkout@v4
 
+    # Étape 2 : installation de Python dans la VM
+    # On impose explicitement la version 3.13
     - name: Installation de Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.13"
 
+    # Étape 3 : installation des dépendances du projet
     - name: Installation des dépendances
       run: |
+        # Mise à jour de pip
         python -m pip install --upgrade pip
+
+        # Installation des librairies listées dans requirements.txt
         pip install -r requirements.txt
 
+    # Étape 4 : exécution des tests automatisés
     - name: Lancer les tests
       run: |
+        # Lance pytest, qui détecte et exécute automatiquement les tests
         pytest

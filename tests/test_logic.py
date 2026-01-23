@@ -59,14 +59,15 @@ def test_compteur_materiels_disponibles(db_session):
         mat_serial="SN-TEST-001",
         mat_dateachat=d,
         mat_statut="Disponible",
+        mat_prix_jour=10.00,   # obligatoire
         mod_id=mod.mod_id
-    )
-
+)
     # Création d'un matériel LOUÉ (ne doit PAS être retourné)
     m2 = Materiel(
         mat_serial="SN-TEST-002",
         mat_dateachat=d,
         mat_statut="Loué",
+        mat_prix_jour=12.00,   # obligatoire
         mod_id=mod.mod_id
     )
 
