@@ -35,19 +35,14 @@ def test_compteur_materiels_disponibles(db_session):
 
     # Ajout des objets à la session de test
     db_session.add_all([cat, mar])
+    db_session.flush()  # pour obtenir cat.cat_id et mar.mar_id
 
-    # Commit pour les insérer réellement en base
-    # Cela permet d'obtenir cat.cat_id et mar.mar_id
-    db_session.commit()
-
-    # Création d'un modèle lié à la catégorie et à la marque
     mod = Modele(
         mod_libelle="TestModele",
         cat_id=cat.cat_id,
         mar_id=mar.mar_id
     )
 
-    # Insertion du modèle en base
     db_session.add(mod)
     db_session.commit()
 
@@ -61,7 +56,7 @@ def test_compteur_materiels_disponibles(db_session):
         mat_statut="Disponible",
         mat_prix_jour=10.00,   # obligatoire
         mod_id=mod.mod_id
-)
+    )
     # Création d'un matériel LOUÉ (ne doit PAS être retourné)
     m2 = Materiel(
         mat_serial="SN-TEST-002",
