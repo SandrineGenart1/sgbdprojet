@@ -24,8 +24,89 @@ Ce bloc remplace le titre défini dans base.html
 Ce bloc remplace le contenu principal de la page
 -->
 
+<h2>Tableau de bord</h2>
+
 <p>
-    Bienvenue dans l’application de gestion de location de matériel.
+    Vue d’ensemble de l’activité de location.
 </p>
+
+<!-- ========================= -->
+<!-- INDICATEURS GLOBAUX -->
+<!-- ========================= -->
+
+<table border="1" cellpadding="10">
+    <tr>
+        <td>
+            <strong>Chiffre d’affaires (30 derniers jours)</strong><br>
+            {{ "%.2f"|format(data.ca_30j) }} €
+        </td>
+        <td>
+            <strong>Contrats actifs</strong><br>
+            {{ data.contrats_actifs }}
+        </td>
+    </tr>
+</table>
+
+<br>
+
+<!-- ========================= -->
+<!-- TOP 5 RENTABILITÉ -->
+<!-- ========================= -->
+
+<h3>Top 5 des matériels les plus rentables du mois</h3>
+
+{% if data.top5 %}
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>Matériel</th>
+            <th>Revenu généré</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for nom, total in data.top5 %}
+        <tr>
+            <td>{{ nom }}</td>
+            <td>{{ "%.2f"|format(total) }} €</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Aucune donnée disponible pour ce mois.</p>
+{% endif %}
+
+<br>
+
+<!-- ========================= -->
+<!-- ALERTES RETARD -->
+<!-- ========================= -->
+
+<h3>Alertes – matériels non restitués</h3>
+
+{% if data.alertes %}
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>Client</th>
+            <th>Email</th>
+            <th>Matériel</th>
+            <th>Date de retour prévue</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in data.alertes %}
+        <tr>
+            <td>{{ a.client_nom }} {{ a.client_prenom }}</td>
+            <td>{{ a.client_mail }}</td>
+            <td>#{{ a.mat_id }} – {{ a.mat_serial }}</td>
+            <td>{{ a.retour_prevu }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Aucun retard en cours.</p>
+{% endif %}
 
 {% endblock %}

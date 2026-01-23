@@ -18,16 +18,30 @@
             <a href="/materiels/disponibles">Matériels disponibles</a> |
             <a href="/categories">Catégories</a> |
             <a href="/marques">Marques</a>
+            <a href="/locations/nouveau">Nouvelle location</a> |
+            <a href="/restitutions">Restitutions</a> |
+            <a href="/contrats">Contrats</a> |
+
+
         </nav>
 
         <hr>
     </header>
 
     <!-- Contenu spécifique à chaque page -->
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
+   <main>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for msg in messages %}
+                    <li>{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
 
 </body>
 </html>

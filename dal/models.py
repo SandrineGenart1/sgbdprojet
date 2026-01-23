@@ -15,7 +15,7 @@ Aucune requête SQL n'est écrite ici.
 Aucune logique métier n'est écrite ici.
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Numeric
 # On ajoute ForeignKey et Date car on les utilise dans d'autres classes du modèle
 
 from dal.database import Base
@@ -190,12 +190,19 @@ class Materiel(Base):
     mat_id = Column(Integer, primary_key=True)
 
     mat_serial = Column(String(50), nullable=False, unique=True)
+
+     # Métier
     mat_dateachat = Column(Date, nullable=False)
 
     # Le CHECK des valeurs possibles (Disponible, Loué, En maintenance, Rebut)
     # est déjà défini dans la base de données.
     mat_statut = Column(String(20), nullable=False)
 
+    # le prix de la locatio par jour, c'est un format adapté à la monnaie
+    mat_prix_jour = Column(Numeric(8, 2), nullable=False)
+
+
+    # Relations
     # Clé étrangère vers MODELE
     mod_id = Column(Integer, ForeignKey("modele.mod_id"), nullable=False)
 
@@ -232,6 +239,9 @@ class LigneContrat(Base):
 
     cont_id = Column(Integer, ForeignKey("contrat.cont_id"), nullable=False)
     mat_id = Column(Integer, ForeignKey("materiel.mat_id"), nullable=False)
+
+    lc_retard_jours = Column(Integer, nullable=True)
+    lc_penalite = Column(Numeric(8, 2), nullable=True)
 
     # Relation vers le contrat associé
     contrat = relationship("Contrat", back_populates="lignes")
