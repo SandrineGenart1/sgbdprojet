@@ -25,6 +25,8 @@ from flask import request, redirect, url_for, flash
 # Import de la BLL
 from bll.catalogue_service import CatalogueService
 from bll.dashboard_service import DashboardService
+from bll.client_service import ClientService, ClientError
+from bll.location_service import LocationService, LocationError
 
 # Import DAL : session + repository
 from dal.database import SessionLocal
@@ -32,8 +34,7 @@ from dal.repository import LocaMatRepository
 
 
 from datetime import date
-from bll.location_service import LocationService, LocationError
-
+from sqlalchemy.exc import IntegrityError
 
 
 # -----------------------------------------------------------------------------
@@ -68,6 +69,10 @@ def build_dashboard_service(session):
     repo = LocaMatRepository(session)
     return DashboardService(repo)
 
+def build_client_service(session):
+    repo = LocaMatRepository(session)
+    return ClientService(repo)
+
 
 
 # =========================
@@ -85,6 +90,79 @@ def home():
 
     return render_template("home.html", data=data)
 
+# =========================
+# ROUTE GET : Formulaire ajout client
+# =========================
+@app.get("/clients/nouveau")
+def client_nouveau():
+    """
+    GET /clients/nouveau
+    Affiche le formulaire pour créer un client.
+
+    Rappel :
+    - UI = affiche la page
+    - aucune insertion en base ici
+    """
+    return render_template("client_nouveau.html")
+
+
+# =========================
+# ROUTE POST : Créer client
+# =========================
+@app.post("/clients/creer")
+def client_creer():
+    """
+    POST /clients/creer
+    Traite l'envoi du formulaire et crée le client via la BLL.
+
+    Étapes :
+    1) lire les champs du formulaire
+    2) construire le service (session -> repo -> service)
+    3) appeler ClientService.creer_client(...)
+    4) gérer les erreurs (métier ou contrainte UNIQUE email)
+    5) rediriger
+    """
+    try:
+        # 1) Lecture des champs du formulaire (UI)
+        prenom = request.form.get("cli_prenom", "")
+        nom = request.form.get("cli_nom", "")
+        adresse = request.form.get("cli_adresse", "")
+        cp = request.form.get("cli_cp", "")
+        tel = request.form.get("cli_tel", "")
+        mail = request.form.get("cli_mail", "")
+        vip = request.form.get("cli_vip") == "on"  # checkbox HTML
+
+        # 2) Appel BLL via une session SQLAlchemy
+        with SessionLocal() as session:
+            client_service = build_client_service(session)
+            client_service.creer_client(
+                prenom=prenom,
+                nom=nom,
+                adresse=adresse,
+                cp=cp,
+                tel=tel,
+                mail=mail,
+                vip=vip
+            )
+
+        # 3) Si tout est OK
+        flash("Client ajouté.")
+        return redirect(url_for("client_nouveau"))
+
+    except ClientError as e:
+        # Erreur métier : champ manquant, etc.
+        flash(str(e))
+        return redirect(url_for("client_nouveau"))
+
+    except IntegrityError:
+        # Erreur DB : email UNIQUE déjà existant
+        flash("Cet email existe déjà. Veuillez en choisir un autre.")
+        return redirect(url_for("client_nouveau"))
+
+    except ValueError as e:
+        # Au cas où une conversion échoue (rare ici, mais cohérent avec le style)
+        flash(str(e))
+        return redirect(url_for("client_nouveau"))
 
 # =========================
 # ROUTE : MATÉRIELS DISPONIBLES

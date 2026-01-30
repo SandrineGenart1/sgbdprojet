@@ -1,0 +1,121 @@
+{# ===================================================== #}
+{# client_nouveau.html                                   #}
+{# ----------------------------------------------------- #}
+{# Formulaire d'ajout d'un client                         #}
+{# Utilisé par :                                          #}
+{#  - GET  /clients/nouveau  → affichage du formulaire    #}
+{#  - POST /clients/creer    → traitement via Flask/BLL   #}
+{# ===================================================== #}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Ajouter un client</h1>
+
+{# ----------------------------------------------------- #}
+{# Formulaire HTML                                       #}
+{# - method="post" : envoie les données au serveur        #}
+{# - action="/clients/creer" : route Flask POST           #}
+{# ----------------------------------------------------- #}
+<form method="post" action="{{ url_for('client_creer') }}">
+
+    {# Prénom du client (NOT NULL en base) #}
+    <div>
+        <label for="cli_prenom">Prénom</label><br>
+        <input
+            type="text"
+            id="cli_prenom"
+            name="cli_prenom"
+            required
+        >
+    </div>
+
+    <br>
+
+    {# Nom du client (NOT NULL en base) #}
+    <div>
+        <label for="cli_nom">Nom</label><br>
+        <input
+            type="text"
+            id="cli_nom"
+            name="cli_nom"
+            required
+        >
+    </div>
+
+    <br>
+
+    {# Adresse du client (NOT NULL en base) #}
+    <div>
+        <label for="cli_adresse">Adresse</label><br>
+        <input
+            type="text"
+            id="cli_adresse"
+            name="cli_adresse"
+            required
+        >
+    </div>
+
+    <br>
+
+    {# Code postal (NOT NULL en base) #}
+    <div>
+        <label for="cli_cp">Code postal</label><br>
+        <input
+            type="text"
+            id="cli_cp"
+            name="cli_cp"
+            required
+        >
+    </div>
+
+    <br>
+
+    {# Téléphone (NOT NULL en base) #}
+    <div>
+        <label for="cli_tel">Téléphone</label><br>
+        <input
+            type="text"
+            id="cli_tel"
+            name="cli_tel"
+            required
+        >
+    </div>
+
+    <br>
+
+    {# Email du client (NOT NULL + UNIQUE en base) #}
+    <div>
+        <label for="cli_mail">Email</label><br>
+        <input
+            type="email"
+            id="cli_mail"
+            name="cli_mail"
+            required
+        >
+    </div>
+
+    <br>
+
+    {# Client VIP (BOOLEAN, optionnel) #}
+    <div>
+        <label>
+            <input
+                type="checkbox"
+                name="cli_vip"
+            >
+            Client VIP
+        </label>
+    </div>
+
+    <br>
+
+    {# Bouton d'envoi du formulaire #}
+    <div>
+        <button type="submit">Créer le client</button>
+    </div>
+
+</form>
+
+{% endblock %}

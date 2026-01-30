@@ -243,13 +243,20 @@ class LocaMatRepository:
         Gestion propre :
         - commit si OK
         - rollback en cas d'erreur d'intégrité
+        - aucune règle métier ici (elles sont dans ClientService)
         """
         try:
+             # 1) Ajout de l'objet à la session (pas encore écrit en DB)
             self.session.add(client)
+            # 2) Commit : l'insertion devient effective en base
             self.session.commit()
+             # 3) Refresh : recharge l'objet depuis la DB (récupère cli_id généré)
             self.session.refresh(client)
+            # 4) Retourne l'objet complet
             return client
+        
         except IntegrityError:
+            # En cas de violation de contrainte (ex : UNIQUE cli_mail)
             self.session.rollback()
             raise
 
@@ -280,7 +287,7 @@ class LocaMatRepository:
         return True
 
 
-     # ======================================================
+    # ======================================================
     # F) LOCATIONS (TRANSACTION)
     # ======================================================
 
