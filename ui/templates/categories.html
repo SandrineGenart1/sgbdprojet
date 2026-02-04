@@ -1,0 +1,94 @@
+<!--
+categories.html
+===============
+
+Ce fichier est un TEMPLATE HTML utilisé par Flask + Jinja2.
+
+Il sert à afficher la liste des catégories
+récupérées depuis la base de données via :
+UI (Flask) → BLL → DAL → DB
+-->
+
+{% extends "base.html" %}
+<!--
+extends "base.html" signifie :
+
+→ On hérite de la structure commune :
+   - <html>
+   - <head>
+   - le menu
+   - le footer
+
+On ne redéfinit ici QUE les parties variables.
+-->
+
+
+
+{% block title %}
+Catégories
+{% endblock %}
+<!--
+Ce bloc remplace le titre de la page
+dans le fichier base.html.
+
+Concrètement :
+<title>Catégories</title>
+-->
+
+
+
+{% block content %}
+<!--
+Début du contenu principal de la page.
+Ce bloc sera inséré dans base.html
+à l’endroit prévu.
+-->
+
+<h1>Liste des catégories</h1>
+
+<!--
+La variable "categories" est envoyée par Flask :
+
+render_template(
+    "categories.html",
+    categories=categories
+)
+
+→ "categories" est une liste d’objets Categorie
+-->
+
+<ul>
+    {% for categorie in categories %}
+    <!--
+    Boucle Jinja :
+    Pour CHAQUE objet "categorie" dans la liste "categories"
+    -->
+
+        <li>
+    <!--
+    Les doubles accolades servent à afficher une valeur Python.
+    -->
+
+        {{ categorie.cat_id }} –
+        {{ categorie.cat_libelle }}
+        </li>
+
+
+    {% endfor %}
+    <!--
+    Fin de la boucle.
+    -->
+
+</ul>
+
+<!--
+Lien de retour vers la page d’accueil
+-->
+<p>
+    <a href="/">⬅ Retour à l’accueil</a>
+</p>
+
+{% endblock %}
+<!--
+Fin du bloc content
+-->

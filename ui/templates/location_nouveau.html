@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+Nouvelle location
+{% endblock %}
+
+{% block content %}
+
+<h1>Nouvelle location</h1>
+
+<form method="post" action="{{ url_for('location_valider') }}">
+
+  <label for="client_id">Client</label><br>
+  <select name="client_id" id="client_id" required>
+    {% for c in clients %}
+      <option value="{{ c.cli_id }}">{{ c.cli_nom }} {{ c.cli_prenom }}</option>
+    {% endfor %}
+  </select>
+
+  <br><br>
+
+  <label for="date_debut">Date début</label><br>
+  <input type="date" name="date_debut" id="date_debut" required>
+
+  <br><br>
+
+  <label for="date_fin">Date fin</label><br>
+  <input type="date" name="date_fin" id="date_fin" required>
+
+  <br><br>
+
+  <p>Matériels disponibles</p>
+
+  {% if materiels %}
+    {% for m in materiels %}
+      <div>
+        <label>
+          <input type="checkbox" name="materiel_ids" value="{{ m.mat_id }}">
+          #{{ m.mat_id }} - {{ m.mat_serial }} ({{ m.modele.marque.mar_libelle }} / {{ m.modele.mod_libelle }})
+        </label>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Aucun matériel disponible.</p>
+  {% endif %}
+
+  <br>
+
+  <button type="submit">Valider la location</button>
+
+</form>
+
+{% endblock %}

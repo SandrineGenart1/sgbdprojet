@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Contrats{% endblock %}
+
+{% block content %}
+<h2>Contrats</h2>
+
+{# 
+  On teste la bonne variable envoyée depuis app.py :
+  render_template("contrats.html", contrats_ui=contrats_ui)
+#}
+{% if contrats_ui %}
+  {# On parcourt la liste préparée par la BLL #}
+  {% for item in contrats_ui %}
+
+    {# Raccourcis : c = contrat ORM, statut = "EN_COURS"/"RETARD"/"TERMINE" #}
+    {% set c = item.contrat %}
+    {% set statut = item.statut %}
+
+    {# Infos calculées par la BLL pour l'affichage #}
+    {% set nb_non_restituees = item.nb_non_restituees %}
+    {% set total_penalites = item.total_penalites %}
+
+    {# 
+      Style et texte de badge selon le statut :
+      - RETARD  : rouge
+      - EN_COURS: orange
+      - TERMINE : vert
+    #}
+    {% if statut == "RETARD" %}
+      {% set border = "3px solid #d9534f" %}
+      {% set badge_bg = "#d9534f" %}
+      {% set badge_txt = "Retard en cours" %}
+    {% elif statut == "EN_COURS" %}
+      {% set border = "3px solid #f0ad4e" %}
+      {% set badge_bg = "#f0ad4e" %}
+      {% set badge_txt = "En cours" %}
+    {% else %}
+      {% set border = "3px solid #5cb85c" %}
+      {% set badge_bg = "#5cb85c" %}
+      {% set badge_txt = "Terminé" %}
+    {% endif %}
+
+    {# Carte contrat : cadre coloré selon le statut #}
+    <div style="border:{{ border }}; padding:12px; margin-bottom:12px; border-radius:8px;">
+
+      {# En-tête : titre à gauche + badge statut à droite #}
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">Contrat #{{ c.cont_id }}</h3>
+
+        <span style="background:{{ badge_bg }}; color:white; padding:6px 10px; border-radius:999px; font-weight:bold;">
+          {{ badge_txt }}
+        </span>
+      </div>
+
+      {# Infos principales : client + période #}
+      <p style="margin-top:10px;">
+        Client : <strong>{{ c.client.cli_nom }} {{ c.client.cli_prenom }}</strong>
+        ({{ c.client.cli_mail }})<br>
+        Période : du {{ c.cont_dateDebut }} au {{ c.cont_dateFin }}
+      </p>
+
+      {# Infos de synthèse (calculées dans la BLL) : très utile pour comprendre rapidement #}
+      <p style="margin-top:6px;">
+        Matériels non restitués : <strong>{{ nb_non_restituees }}</strong><br>
+        Total pénalités : <strong>{{ total_penalites }}</strong> €
+      </p>
+
+      {# Tableau des lignes de contrat #}
+      <table border="1" cellpadding="6" cellspacing="0" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th>Ligne</th>
+            <th>Matériel</th>
+            <th>Retour prévu</th>
+            <th>Retour réel</th>
+            <th>Retard (jours)</th>
+            <th>Pénalité (€)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {# Chaque lc = une LigneContrat #}
+          {% for lc in c.lignes %}
+
+            {# 
+              Mise en évidence :
+              - si non restitué => en gras
+              - si pénalité > 0 => ligne avec fond léger rouge
+              (la pénalité n'est calculée qu'après restitution dans ton modèle)
+            #}
+            <tr
+              {% if lc.lc_penalite and lc.lc_penalite > 0 %}
+                style="background:#fbe9e7;"
+              {% elif lc.lc_dateretourreelle is none %}
+                style="font-weight:bold;"
+              {% endif %}
+            >
+              <td>{{ lc.lc_id }}</td>
+
+              {# Matériel loué #}
+              <td>#{{ lc.materiel.mat_id }} — {{ lc.materiel.mat_serial }}</td>
+
+              <td>{{ lc.lc_dateretourprevue }}</td>
+              <td>{{ lc.lc_dateretourreelle or "-" }}</td>
+
+              {# Retard/pénalité : si NULL en DB => 0 #}
+              <td>{{ lc.lc_retard_jours or 0 }}</td>
+              <td>{{ lc.lc_penalite or 0 }}</td>
+            </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+
+  {% endfor %}
+{% else %}
+  <p>Aucun contrat trouvé.</p>
+{% endif %}
+
+{% endblock %}

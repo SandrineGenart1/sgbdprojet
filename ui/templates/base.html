@@ -1,17 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LOCA-MAT</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 10px; }
-    th { text-align: left; }
-  </style>
+    <meta charset="UTF-8">
+
+    <!-- Titre dynamique selon la page -->
+    <title>{% block title %}LOCA-MAT{% endblock %}</title>
 </head>
 <body>
-  {% block content %}{% endblock %}
+
+    <!-- En-tête commun -->
+    <header>
+        <h1>LOCA-MAT</h1>
+
+        <!-- Menu de navigation -->
+        <nav>
+            <a href="/">Tableau de bord</a> |
+            <a href="/materiels/disponibles">Matériels disponibles</a> |
+            <a href="/clients">Clients</a> |
+            <a href="/clients/nouveau">Ajouter un client</a> |
+            <a href="/categories">Catégories</a> |
+            <a href="/marques">Marques</a>
+            <a href="/locations/nouveau">Nouvelle location</a> |
+            <a href="/restitutions">Restitutions</a> |
+            <a href="/contrats">Contrats</a> |
+
+
+        </nav>
+
+        <hr>
+    </header>
+
+    <!-- Contenu spécifique à chaque page -->
+   <main>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for msg in messages %}
+                    <li>{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
 </body>
 </html>

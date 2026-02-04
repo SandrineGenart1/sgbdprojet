@@ -40,7 +40,10 @@ from sqlalchemy.exc import IntegrityError
 # -----------------------------------------------------------------------------
 # Création de l'application Flask
 # -----------------------------------------------------------------------------
-app = Flask(__name__)
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "ui", "templates"))
+
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
 # -----------------------------------------------------------------------------
@@ -163,6 +166,27 @@ def client_creer():
         # Au cas où une conversion échoue (rare ici, mais cohérent avec le style)
         flash(str(e))
         return redirect(url_for("client_nouveau"))
+# =========================
+# ROUTE : LISTE DES CLIENTS
+# =========================
+@app.get("/clients")
+def clients():
+    """
+    GET /clients
+    Affiche la liste des clients.
+
+    Étapes :
+    - ouvrir une session SQLAlchemy
+    - construire le ClientService (session -> repo -> service)
+    - récupérer les clients via la BLL
+    - envoyer la liste au template
+    """
+    with SessionLocal() as session:
+        client_service = build_client_service(session)
+        clients = client_service.lister_clients()
+
+    return render_template("clients.html", clients=clients)
+
 
 # =========================
 # ROUTE : MATÉRIELS DISPONIBLES
@@ -330,3 +354,5 @@ if __name__ == "__main__":
     # Sur Render, on veut False.
     debug_mode = os.getenv("FLASK_DEBUG", "0") == "1"
     app.run(debug=debug_mode)
+
+

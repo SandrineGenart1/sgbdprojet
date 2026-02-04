@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+Location validée
+{% endblock %}
+
+{% block content %}
+
+<h1>Location validée</h1>
+
+<p><strong>Contrat :</strong> {{ contrat.cont_id }}</p>
+<p><strong>Période :</strong> {{ contrat.cont_dateDebut }} → {{ contrat.cont_dateFin }}</p>
+
+<h2>Matériels loués</h2>
+<ul>
+  {% for m in materiels %}
+    <li>#{{ m.mat_id }} - {{ m.mat_serial }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Prix</h2>
+<ul>
+  <li>Total base : {{ prix.total_base }}</li>
+  <li>Remise durée : {{ (prix.remise_duree * 100) | round(0) }} %</li>
+  <li>Remise VIP : {{ (prix.remise_vip * 100) | round(0) }} %</li>
+  <li>Surcharge risque : {{ (prix.surcharge_risque * 100) | round(0) }} %</li>
+  <li><strong>Total final : {{ prix.total_final }}</strong></li>
+</ul>
+
+<p><a href="{{ url_for('location_nouveau') }}">Faire une autre location</a></p>
+
+{% endblock %}

@@ -1,0 +1,63 @@
+<!--
+marques.html
+============
+
+Template Jinja2 pour afficher la liste des marques.
+
+Les données proviennent de :
+Flask (UI) → BLL (CatalogueService) → DAL (Repository) → DB
+-->
+
+{% extends "base.html" %}
+<!--
+On hérite de base.html pour ne pas répéter
+la structure HTML commune (menu, head, etc.)
+-->
+
+
+
+{% block title %}
+Marques
+{% endblock %}
+<!--
+Titre de la page (balise <title>)
+-->
+
+
+
+{% block content %}
+<!--
+Contenu principal de la page
+-->
+
+<h1>Liste des marques</h1>
+
+<!--
+La variable "marques" est fournie par Flask
+via render_template("marques.html", marques=...)
+-->
+
+<ul>
+    {% for marque in marques %}
+    <!--
+    Boucle Jinja :
+    pour chaque objet Marque dans la liste "marques"
+    -->
+
+        <li>
+            <!--
+            Accès aux attributs Python
+            de l'objet ORM Marque
+            -->
+            {{ marque.mar_id }} –
+            {{ marque.mar_libelle }}
+        </li>
+
+    {% endfor %}
+</ul>
+
+<p>
+    <a href="/">⬅ Retour à l’accueil</a>
+</p>
+
+{% endblock %}

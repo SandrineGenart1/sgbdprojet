@@ -1,0 +1,153 @@
+<!--
+templates/restitutions.html
+==========================
+
+But :
+- Afficher la liste des matériels à restituer (= lignes de contrat dont lc_dateretourreelle est NULL)
+- Permettre à l'utilisateur :
+    1) de choisir une date de retour réelle
+    2) de cocher une ou plusieurs lignes
+    3) d'envoyer le formulaire en POST vers /restitutions/valider
+
+Pré-requis côté app.py :
+- route GET  /restitutions        -> render_template("restitutions.html", lignes=lignes)
+- route POST /restitutions/valider -> traite les cases cochées + la date
+
+Pré-requis côté BLL/DAL :
+- LocationService.lister_lignes_a_restituer()
+- LocationService.restituer(lc_ids, date_retour_reelle)
+- Repo.get_lignes_a_restituer() retourne des LigneContrat avec relations chargées :
+    lc.contrat.client / lc.materiel
+-->
+
+{% extends "base.html" %}
+
+{% block title %}
+Restitutions
+{% endblock %}
+
+{% block content %}
+
+<h2>Restituer du matériel</h2>
+
+<p>
+    Sélectionnez une ou plusieurs lignes à restituer, puis indiquez la date de retour réelle.
+</p>
+
+<!--
+Formulaire :
+- method="post" : on envoie les données au serveur
+- action : on pointe vers la route Flask "restitutions_valider"
+  (dans app.py : @app.post("/restitutions/valider") def restitutions_valider(): ...)
+-->
+<form method="post" action="{{ url_for('restitutions_valider') }}">
+
+    <!--
+    Champ obligatoire : date de retour réelle
+    - required => le navigateur empêchera l'envoi si la date est vide
+    - name="date_retour_reelle" => clé utilisée dans request.form["date_retour_reelle"]
+    -->
+    <label for="date_retour_reelle"><strong>Date de retour réelle</strong></label><br>
+    <input
+        type="date"
+        id="date_retour_reelle"
+        name="date_retour_reelle"
+        required
+    >
+
+    <br><br>
+
+    <h3>Matériels à restituer</h3>
+
+    <!--
+    Si la liste est vide, on affiche un message.
+    Sinon, on affiche une "case à cocher" par ligne de contrat.
+    -->
+    {% if lignes %}
+        <p>
+            Cochez les lignes à restituer :
+        </p>
+
+        <!--
+       simple tableau HTML pour un affichage clair.
+      
+        -->
+        <table border="1" cellpadding="6" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Choisir</th>
+                    <th>Client</th>
+                    <th>Email</th>
+                    <th>Matériel</th>
+                    <th>Date de retour prévue</th>
+                    <th>Retard (jours)</th>
+                    <th>Pénalité (€)</th>
+
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for lc in lignes %}
+                    <tr>
+                        <td>
+                            <!--
+                            Case à cocher :
+                            - name="lc_ids" => Flask récupère une liste via request.form.getlist("lc_ids")
+                            - value="{{ lc.lc_id }}" => identifiant unique de la ligne
+                            -->
+                            <input type="checkbox" name="lc_ids" value="{{ lc.lc_id }}">
+                        </td>
+
+                        <td>
+                            <!--
+                            On affiche le client lié au contrat :
+                            lc.contrat.client.cli_nom / cli_prenom
+                            -->
+                            {{ lc.contrat.client.cli_nom }} {{ lc.contrat.client.cli_prenom }}
+                        </td>
+
+                        <td>
+                            {{ lc.contrat.client.cli_mail }}
+                        </td>
+
+                        <td>
+                            <!--
+                            On affiche :
+                            - l'id du matériel
+                            - le numéro de série
+                            -->
+                            #{{ lc.materiel.mat_id }} — {{ lc.materiel.mat_serial }}
+                        </td>
+
+                        <td>
+                            {{ lc.lc_dateretourprevue }}
+                        </td>
+
+                        <td>{{ lc.lc_retard_jours or 0 }}</td>
+                        <td>{{ lc.lc_penalite or 0 }}</td>
+
+
+
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <br>
+
+        <!--
+        Bouton d'envoi :
+        - déclenche POST /restitutions/valider
+        -->
+        <button type="submit">Valider la restitution</button>
+
+    {% else %}
+        <p>
+            Aucune restitution en attente.
+        </p>
+    {% endif %}
+
+</form>
+
+{% endblock %}

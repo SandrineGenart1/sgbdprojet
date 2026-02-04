@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Clients</h1>
+
+{% if clients %}
+    <table border="1" cellpadding="6" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Code postal</th>
+                <th>VIP</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for c in clients %}
+            <tr>
+                <td>{{ c.cli_id }}</td>
+                <td>{{ c.cli_nom }}</td>
+                <td>{{ c.cli_prenom }}</td>
+                <td>{{ c.cli_mail }}</td>
+                <td>{{ c.cli_tel }}</td>
+                <td>{{ c.cli_cp }}</td>
+                <td>{% if c.cli_vip %}Oui{% else %}Non{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aucun client pour le moment.</p>
+{% endif %}
+
+{% endblock %}
